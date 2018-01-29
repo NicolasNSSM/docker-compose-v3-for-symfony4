@@ -1,0 +1,30 @@
+version: '3'
+
+volumes:
+    mysql_data:
+
+services:
+    mysql:
+        image: mysql
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        volumes:
+            - mysql_data:/var/lib/mysql/
+    php-fpm:
+        build:
+            context: ../
+            dockerfile: .docker/php-fpm/Dockerfile
+        working_dir: /app
+        volumes:
+            - ../:/app
+        depends_on:
+            - mysql
+    nginx:
+        image: nginx:alpine
+        volumes:
+            - ../:/app
+            - ./nginx/vhost.conf:/etc/nginx/nginx.conf:ro
+        ports:
+            - 80:80
+        depends_on:
+            - php-fpm
